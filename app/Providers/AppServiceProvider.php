@@ -6,6 +6,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -41,6 +42,30 @@ class AppServiceProvider extends ServiceProvider
                 Limit::perMinute(100)->by($request->ip())->response($loginRateLimitResponse),
                 Limit::perMinute(5)->by($request->input('email'))->response($loginRateLimitResponse),
             ];
+        });
+
+        RateLimiter::for('password-reset-request',function (Request $request)  {
+            return[
+                Limit::perHour(10)->by($request->ip()),
+                Limit::perHour(3)->by($request->input('email')),                
+            ];
+        });
+        RateLimiter::for('password-reset',function (Request $request)  {
+            return[
+                Limit::perHour(5)->by($request->ip()),
+                Limit::perHour(3)->by($request->input('email')),                
+            ];
+        });
+
+        Password::defaults(function () {
+            return Password::min(8);
+
+            return Password::min(8)
+                ->mixedCase()
+                ->uncompromised()
+                ->letters()
+                ->numbers()
+                ->symbols();
         });
     }
 }
