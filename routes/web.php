@@ -5,6 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\TaskController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
@@ -15,13 +17,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
     Route::get('/forgot-password', [PasswordResetController::class, 'showPasswordResetRequestForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendPasswordResetEmail'])
-    ->middleware('throttle:password-reset-request')
-    ->name('password.email');
+        ->middleware('throttle:password-reset-request')
+        ->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showPasswordResetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
-    ->middleware('throttle:password-reset')
-    ->name('password.store');
-
+        ->middleware('throttle:password-reset')
+        ->name('password.store');
 });
 
 Route::middleware('auth')->group(function () {
@@ -38,5 +39,14 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth', 'verified')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::resource('categories', CategoryController::class)
+        ->except(['show'])
+        ->middlewareFor(['edit', 'update', 'destroy'], 'can:manage,category');
+
+    Route::resource('tasks', TaskController::class)
+        ->except(['show'])
+        ->middlewareFor(['edit', 'update', 'destroy', 'toggle'], 'can:manage,task');
+    Route::patch('tasks/{task}/toggle', [TaskController::class, 'toggle'])->name('tasks.toggle');
+
     Route::redirect('/', '/dashboard');
 });

@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
  * @property int $user_id
+ * @property string $uuid
  * @property int|null $category_id
  * @property string $title
  * @property string|null $description
@@ -16,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $completed_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Category|null $categories
+ * @property-read \App\Models\Category|null $category
  * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Task newQuery()
@@ -35,6 +37,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Task extends Model
 {
+    use HasUlids;
+    protected $fillable = ['title', 'description', 'category_id', 'task_date', 'completed_at','is_recurring'];
+    public function getRouteKeyName()
+    {
+        return 'uuid';
+    }
     public function casts(): array
     {
         return [
@@ -48,8 +56,12 @@ class Task extends Model
     {
         return $this->belongsTo(User::class);
     }
-    function categories(): BelongsTo
+    function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+    public function uniqueIds()
+    {
+        return ['uuid'];
     }
 }

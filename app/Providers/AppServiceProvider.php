@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Gate;
+use App\Models\Task;
+use App\Policies\TaskPolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -67,5 +70,8 @@ class AppServiceProvider extends ServiceProvider
                 ->numbers()
                 ->symbols();
         });
+
+        // task policy registration
+        Gate::policy(Task::class, TaskPolicy::class);
     }
 }
